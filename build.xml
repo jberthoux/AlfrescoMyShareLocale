@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+
+<project name="alfresco-mysharelocale-extension" default="deploy-amp" basedir=".">
+
+	<!-- change alfresco.home to your envirionment -->
+	<property name="alfresco.home" value="/Applications/alfresco-4.0.0" />
+	<property name="alfresco.amp.dir" value="${alfresco.home}/amps_share" />
+
+	<property name="project.dir" value="." />
+	<property name="amp.name" value="mysharelocale" />
+
+	<property name="build.dir" value="${project.dir}/build" />
+	<property name="config.dir" value="${project.dir}/config" />
+	<property name="jar.file" value="${build.dir}/lib/${amp.name}-extension.jar" />
+	<property name="amp.file" value="${build.dir}/dist/${amp.name}-extension.amp" />
+
+	<property name="encoding" value="UTF-8" />
+
+	<path id="alfresco.classpath">
+		<fileset dir="${alfresco.home}/tomcat/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${alfresco.home}/tomcat/webapps/alfresco/WEB-INF/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${alfresco.home}/tomcat/webapps/share/WEB-INF/lib/">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="mkdirs">
+		<mkdir dir="${build.dir}/dist" />
+		<mkdir dir="${build.dir}/lib" />
+	</target>
+
+	<path id="class.path">
+		<dirset dir="${build.dir}" />
+		<path refid="alfresco.classpath" />
+	</path>
+
+	<target name="compile">
+		<mkdir dir="${build.dir}/classes" />
+		<javac target="1.6" debug="on" encoding="${encoding}" classpathref="class.path" srcdir="${project.dir}/src" destdir="${build.dir}/classes" />
+	</target>
+
+	<target name="package-jar" depends="compile">
+		<jar destfile="${jar.file}">
+			<fileset dir="${build.dir}/classes" excludes="**/custom*,**/*Test*" includes="**/*.class" />
+		</jar>
+	</target>
+
+	<target name="package-amp" depends="mkdirs, package-jar" description="Package the Module">
+		<zip destfile="${amp.file}">
+			<fileset dir="${project.dir}/build" includes="lib/*.jar" />
+			<fileset dir="${project.dir}" includes="config/**/*" />
+			<fileset dir="${project.dir}" includes="module.properties" />
+		</zip>
+	</target>
+
+	<target name="deploy-amp" depends="package-amp" description="Deploy amp into alfresco amp directory">
+		<copy file="${amp.file}" todir="${alfresco.amp.dir}" />
+	</target>
+
+</project>
